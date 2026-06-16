@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SGCMA - Sistema de Gerenciamento de Clínica Médica</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>SGCMA</h1>
+    <span class="subtitle">Sistema de Gerenciamento de Clínica Médica e Agendamento</span>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="painel">Painel da Recepção</button>
+    <button class="tab-btn" data-tab="novo">Novo Agendamento</button>
+    <button class="tab-btn" data-tab="historico">Prontuário / Histórico</button>
+  </nav>
+
+  <main class="container">
+    <!-- Painel da Recepção -->
+    <section id="painel" class="tab-content active">
+      <h2>Agenda Diária</h2>
+      <button id="btn-recarregar" class="btn-secundario">Recarregar</button>
+      <div id="msg-agenda" class="msg"></div>
+      <table id="tabela-agenda">
+        <thead>
+          <tr>
+            <th>Horário</th>
+            <th>Paciente</th>
+            <th>Médico</th>
+            <th>Especialidade</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Novo Agendamento -->
+    <section id="novo" class="tab-content">
+      <h2>Agendar Nova Consulta</h2>
+      <form id="form-agendar">
+        <div class="campo">
+          <label for="paciente_id">ID do Paciente *</label>
+          <input type="number" id="paciente_id" name="paciente_id" required />
+        </div>
+        <div class="campo">
+          <label for="medico_id">ID do Médico *</label>
+          <input type="number" id="medico_id" name="medico_id" required />
+        </div>
+        <div class="campo">
+          <label for="data_consulta">Data *</label>
+          <input type="date" id="data_consulta" name="data_consulta" required />
+        </div>
+        <div class="campo">
+          <label for="hora_consulta">Hora *</label>
+          <input type="time" id="hora_consulta" name="hora_consulta" required />
+        </div>
+        <div class="campo">
+          <label for="observacoes">Observações</label>
+          <textarea id="observacoes" name="observacoes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn-primario">Agendar</button>
+        <div id="msg-agendar" class="msg"></div>
+      </form>
+    </section>
+
+    <!-- Histórico -->
+    <section id="historico" class="tab-content">
+      <h2>Histórico do Paciente</h2>
+      <div class="campo inline">
+        <label for="busca_paciente">ID do Paciente</label>
+        <input type="number" id="busca_paciente" />
+        <button id="btn-buscar" class="btn-primario">Buscar</button>
+      </div>
+      <div id="msg-historico" class="msg"></div>
+      <div id="lista-historico"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
