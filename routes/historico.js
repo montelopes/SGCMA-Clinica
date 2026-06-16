@@ -1,14 +1,12 @@
-/**
- * Rota: Prontuário / Histórico do Paciente
- * GET /api/historico-paciente?paciente_id=123  ->  SELECT * FROM vw_historico_paciente
- *
- * Campos JSON (ex: metadados com Pressão Arterial e Temperatura) são
- * automaticamente parseados antes do envio ao frontend.
- */
 const express = require('express');
 const pool = require('../config/db');
-
 const router = express.Router();
+
+async function registrarAuditoria(tabela, operacao, id_registro, id_usuario, dados_anteriores = null) {
+  const query = 'INSERT INTO log_auditoria (tabela_afetada, operacao, id_registro, id_usuario, dados_anteriores) VALUES (?, ?, ?, ?, ?)';
+  const dados_json = dados_anteriores ? JSON.stringify(dados_anteriores) : null;
+  await pool.query(query, [tabela, operacao, id_registro, id_usuario, dados_json]);
+}
 
 router.get('/historico-paciente', async (req, res) => {
   const { paciente_id } = req.query;
@@ -23,8 +21,6 @@ router.get('/historico-paciente', async (req, res) => {
       [rows] = await pool.query('SELECT * FROM vw_historico_paciente');
     }
 
-    // Parse seguro de colunas JSON (mysql2 já parseia tipo JSON nativo,
-    // mas tratamos caso a view retorne TEXT/VARCHAR com JSON serializado).
     const parsed = rows.map((row) => {
       const out = { ...row };
       for (const key of Object.keys(out)) {
@@ -39,7 +35,28 @@ router.get('/historico-paciente', async (req, res) => {
     res.json(parsed);
   } catch (err) {
     console.error('Erro em /historico-paciente:', err);
-    res.status(500).json({ erro: 'Falha ao carregar histórico', detalhe: err.sqlMessage || err.message });
+    res.status(500).json({ erro: 'Falha ao carregar histórico', detalhe: err.message });
+  }
+});
+
+router.post('/prontuario', async (req, res) => {
+  const { id_consulta, paciente_id, diagnostico, prescricao, observacoes, metadados, id_usuario } = req.body;
+  if (!id_consulta || !paciente_id) return res.status(400).json({ erro: 'id_consulta e paciente_id obrigatórios' });
+
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO prontuarios (id_consulta, paciente_id, diagnostico, prescricao, observacoes, metadados) VALUES (?, ?, ?, ?, ?, ?)',
+      [id_consulta, paciente_id, diagnostico || null, prescricao || null, observacoes || null, metadados ? JSON.stringify(metadados) : null]
+    );
+    
+    // Atualiza o status da consulta para REALIZADA
+    await pool.query('UPDATE consultas SET status = "REALIZADA" WHERE id_consulta = ?', [id_consulta]);
+
+    await registrarAuditoria('prontuarios', 'INSERT', result.lastID, id_usuario || null);
+
+    res.status(201).json({ sucesso: true, id_prontuario: result.lastID });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
   }
 });
 

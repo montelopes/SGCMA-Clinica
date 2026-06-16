@@ -3,82 +3,267 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SGCMA - Sistema de Gerenciamento de Clínica Médica</title>
+  <title>SGCMA - Sistema Premium de Gestão Clínica</title>
   <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Phosphor Icons for modern icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
-  <header class="topbar">
-    <h1>SGCMA</h1>
-    <span class="subtitle">Sistema de Gerenciamento de Clínica Médica e Agendamento</span>
-  </header>
 
-  <nav class="tabs">
-    <button class="tab-btn active" data-tab="painel">Painel da Recepção</button>
-    <button class="tab-btn" data-tab="novo">Novo Agendamento</button>
-    <button class="tab-btn" data-tab="historico">Prontuário / Histórico</button>
-  </nav>
+  <!-- Notificações Toast -->
+  <div id="toast-container"></div>
 
-  <main class="container">
-    <!-- Painel da Recepção -->
-    <section id="painel" class="tab-content active">
-      <h2>Agenda Diária</h2>
-      <button id="btn-recarregar" class="btn-secundario">Recarregar</button>
-      <div id="msg-agenda" class="msg"></div>
-      <table id="tabela-agenda">
-        <thead>
-          <tr>
-            <th>Horário</th>
-            <th>Paciente</th>
-            <th>Médico</th>
-            <th>Especialidade</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- Novo Agendamento -->
-    <section id="novo" class="tab-content">
-      <h2>Agendar Nova Consulta</h2>
-      <form id="form-agendar">
-        <div class="campo">
-          <label for="paciente_id">ID do Paciente *</label>
-          <input type="number" id="paciente_id" name="paciente_id" required />
-        </div>
-        <div class="campo">
-          <label for="medico_id">ID do Médico *</label>
-          <input type="number" id="medico_id" name="medico_id" required />
-        </div>
-        <div class="campo">
-          <label for="data_consulta">Data *</label>
-          <input type="date" id="data_consulta" name="data_consulta" required />
-        </div>
-        <div class="campo">
-          <label for="hora_consulta">Hora *</label>
-          <input type="time" id="hora_consulta" name="hora_consulta" required />
-        </div>
-        <div class="campo">
-          <label for="observacoes">Observações</label>
-          <textarea id="observacoes" name="observacoes" rows="3"></textarea>
-        </div>
-        <button type="submit" class="btn-primario">Agendar</button>
-        <div id="msg-agendar" class="msg"></div>
-      </form>
-    </section>
-
-    <!-- Histórico -->
-    <section id="historico" class="tab-content">
-      <h2>Histórico do Paciente</h2>
-      <div class="campo inline">
-        <label for="busca_paciente">ID do Paciente</label>
-        <input type="number" id="busca_paciente" />
-        <button id="btn-buscar" class="btn-primario">Buscar</button>
+  <!-- TELA DE LOGIN -->
+  <div id="login-screen" class="screen active">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="logo-icon"><i class="ph ph-heartbeat"></i></div>
+        <h2>SGCMA</h2>
+        <p>Acesse o sistema</p>
       </div>
-      <div id="msg-historico" class="msg"></div>
-      <div id="lista-historico"></div>
-    </section>
-  </main>
+      <form id="form-login">
+        <div class="input-group">
+          <i class="ph ph-envelope"></i>
+          <input type="email" id="login_email" placeholder="E-mail de acesso" required />
+        </div>
+        <div class="input-group">
+          <i class="ph ph-lock-key"></i>
+          <input type="password" id="login_senha" placeholder="Senha" required />
+        </div>
+        <button type="submit" class="btn-primary" id="btn-login-submit">Entrar no sistema <i class="ph ph-arrow-right"></i></button>
+      </form>
+    </div>
+    <div class="login-bg"></div>
+  </div>
+
+  <!-- TELA PRINCIPAL (DASHBOARD) -->
+  <div id="app-screen" class="screen">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <i class="ph ph-heartbeat"></i> <span>SGCMA</span>
+      </div>
+      <div class="sidebar-user">
+        <div class="avatar"><i class="ph ph-user"></i></div>
+        <div class="user-info">
+          <strong id="user-name">Usuário</strong>
+          <span id="user-role">Nível</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="painel"><i class="ph ph-squares-four"></i> Painel / Agenda</button>
+        <button class="nav-item" data-tab="cadastros" data-role="admin,recepcao"><i class="ph ph-users"></i> Cadastros</button>
+        <button class="nav-item" data-tab="agendar" data-role="admin,recepcao,medico"><i class="ph ph-calendar-plus"></i> Agendar</button>
+        <button class="nav-item" data-tab="prontuario" data-role="admin,medico"><i class="ph ph-file-text"></i> Prontuário</button>
+        <button class="nav-item" data-tab="gerencial" data-role="admin,financeiro"><i class="ph ph-chart-pie-slice"></i> Gerencial</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button id="btn-logout" class="nav-item"><i class="ph ph-sign-out"></i> Sair</button>
+      </div>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+      
+      <!-- ABA: Painel / Agenda Diária -->
+      <section id="painel" class="tab-content active">
+        <div class="section-header">
+          <h2><i class="ph ph-calendar-check"></i> Agenda Diária</h2>
+          <button id="btn-recarregar-agenda" class="btn-outline"><i class="ph ph-arrows-clockwise"></i> Atualizar</button>
+        </div>
+        <div class="card table-container">
+          <table id="tabela-agenda" class="modern-table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Especialidade</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ABA: Cadastros -->
+      <section id="cadastros" class="tab-content">
+        <div class="section-header">
+          <h2><i class="ph ph-users"></i> Gestão de Pacientes</h2>
+        </div>
+        <div class="card form-card">
+          <form id="form-paciente">
+            <div class="grid-form">
+              <div class="input-group"><input type="text" id="pac_cpf" placeholder="CPF" required /></div>
+              <div class="input-group"><input type="text" id="pac_nome" placeholder="Nome Completo" required /></div>
+              <div class="input-group"><input type="date" id="pac_dt_nasc" required /></div>
+              <div class="input-group"><input type="text" id="pac_telefone" placeholder="Telefone" /></div>
+              <div class="input-group"><input type="email" id="pac_email" placeholder="E-mail" /></div>
+              <div class="input-group">
+                <select id="pac_convenio">
+                  <option value="">Sem Convênio (Particular)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Salvar Paciente</button>
+            </div>
+          </form>
+        </div>
+        <div class="card table-container mt-20">
+          <table id="tabela-pacientes" class="modern-table">
+            <thead>
+              <tr><th>ID</th><th>CPF</th><th>Nome</th><th>Contato</th><th>Convênio</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ABA: Novo Agendamento -->
+      <section id="agendar" class="tab-content">
+        <div class="section-header">
+          <h2><i class="ph ph-calendar-plus"></i> Novo Agendamento</h2>
+        </div>
+        <div class="card form-card">
+          <form id="form-agendar">
+            <div class="grid-form">
+              <div class="input-group">
+                <label>Paciente</label>
+                <select id="agenda_paciente" required><option value="">Selecione...</option></select>
+              </div>
+              <div class="input-group">
+                <label>Médico</label>
+                <select id="agenda_medico" required><option value="">Selecione...</option></select>
+              </div>
+              <div class="input-group">
+                <label>Data</label>
+                <input type="date" id="agenda_data" required />
+              </div>
+              <div class="input-group">
+                <label>Hora</label>
+                <input type="time" id="agenda_hora" required />
+              </div>
+            </div>
+            <div class="input-group mt-15">
+              <label>Observações</label>
+              <textarea id="agenda_obs" rows="2" placeholder="Ex: Primeira consulta..."></textarea>
+            </div>
+            <div class="form-actions mt-15">
+              <button type="submit" class="btn-primary">Agendar Consulta</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ABA: Prontuário -->
+      <section id="prontuario" class="tab-content">
+        <div class="section-header">
+          <h2><i class="ph ph-file-text"></i> Histórico e Prontuário</h2>
+        </div>
+        
+        <div class="search-bar card">
+          <div class="input-group">
+            <i class="ph ph-magnifying-glass"></i>
+            <select id="busca_paciente_prontuario"><option value="">Selecione um Paciente...</option></select>
+          </div>
+          <button id="btn-buscar-historico" class="btn-primary">Buscar</button>
+        </div>
+
+        <div id="historico-container" class="mt-20">
+          <!-- Cards de histórico aparecerão aqui -->
+        </div>
+
+        <!-- Modal para Inserir Atendimento -->
+        <div id="modal-atendimento" class="modal">
+          <div class="modal-content card">
+            <h3>Registrar Atendimento</h3>
+            <form id="form-atendimento">
+              <input type="hidden" id="atend_id_consulta" />
+              <input type="hidden" id="atend_id_paciente" />
+              <div class="input-group mt-15">
+                <label>Diagnóstico</label>
+                <textarea id="atend_diag" rows="2" required></textarea>
+              </div>
+              <div class="input-group mt-15">
+                <label>Prescrição</label>
+                <textarea id="atend_presc" rows="2" required></textarea>
+              </div>
+              <div class="input-group mt-15">
+                <label>Observações / Exames</label>
+                <textarea id="atend_obs" rows="2"></textarea>
+              </div>
+              <div class="grid-form mt-15">
+                <div class="input-group">
+                  <label>Pressão Arterial</label>
+                  <input type="text" id="atend_pa" placeholder="Ex: 120/80" />
+                </div>
+                <div class="input-group">
+                  <label>Temperatura (°C)</label>
+                  <input type="number" step="0.1" id="atend_temp" placeholder="Ex: 36.5" />
+                </div>
+              </div>
+              <div class="form-actions mt-20">
+                <button type="button" class="btn-outline" onclick="fecharModal()">Cancelar</button>
+                <button type="submit" class="btn-primary">Salvar Prontuário</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA: Gerencial -->
+      <section id="gerencial" class="tab-content">
+        <div class="section-header">
+          <h2><i class="ph ph-chart-pie-slice"></i> Dashboard Gerencial</h2>
+          <button id="btn-recarregar-dash" class="btn-outline"><i class="ph ph-arrows-clockwise"></i> Atualizar</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="ph ph-calendar-check"></i></div>
+            <div class="stat-info">
+              <h3 id="stat-consultas">0</h3>
+              <span>Consultas Hoje</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="ph ph-users"></i></div>
+            <div class="stat-info">
+              <h3 id="stat-pacientes">0</h3>
+              <span>Total de Pacientes</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="ph ph-stethoscope"></i></div>
+            <div class="stat-info">
+              <h3 id="stat-medicos">0</h3>
+              <span>Médicos Ativos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-layout mt-20">
+          <div class="card">
+            <h3>Desempenho Mensal por Médico</h3>
+            <table id="tabela-relatorio" class="modern-table mt-15">
+              <thead><tr><th>Médico</th><th>Espec.</th><th>Total</th><th>Realizadas</th><th>Canceladas</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <h3>Últimas Ações (Auditoria)</h3>
+            <div class="audit-list" id="lista-auditoria"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
 
   <script src="app.js"></script>
 </body>

@@ -6,9 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
-const agendaRoutes = require('./routes/agenda');
-const agendarRoutes = require('./routes/agendar');
-const historicoRoutes = require('./routes/historico');
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +20,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rotas da API
+const authRoutes = require('./routes/auth');
+const cadastrosRoutes = require('./routes/cadastros');
+const gerencialRoutes = require('./routes/gerencial');
+const agendaRoutes = require('./routes/agenda');
+const agendarRoutes = require('./routes/agendar');
+const historicoRoutes = require('./routes/historico');
+
+app.use('/api/auth', authRoutes);
+app.use('/api', cadastrosRoutes);
+app.use('/api', gerencialRoutes);
 app.use('/api', agendaRoutes);
 app.use('/api', agendarRoutes);
 app.use('/api', historicoRoutes);
