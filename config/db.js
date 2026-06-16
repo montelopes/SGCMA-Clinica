@@ -120,6 +120,8 @@ async function getDb() {
           c.id_consulta,
           c.dt_consulta,
           c.hora_consulta as horario,
+          c.id_paciente,
+          c.id_medico,
           p.nome_paciente as paciente,
           m.nome_medico as medico,
           e.nome as especialidade,
