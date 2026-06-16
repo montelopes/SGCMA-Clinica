@@ -126,7 +126,7 @@ async function carregarAgenda() {
         acoes = `<button class="btn-outline btn-sm" onclick="cancelarConsulta(${c.id_consulta})"><i class="ph ph-x"></i> Cancelar</button>`;
       }
       if(c.status === 'AGENDADA' && (usuarioLogado.nivel_acesso === 'admin' || usuarioLogado.nivel_acesso === 'medico')) {
-         acoes += ` <button class="btn-primary btn-sm" onclick="abrirModalAtendimento(${c.id_consulta}, ${c.id_paciente || 0}, '${c.paciente}')"><i class="ph ph-stethoscope"></i> Atender</button>`;
+         acoes += ` <button class="btn-primary btn-sm" onclick="abrirModalAtendimento(${c.id_consulta}, ${c.id_paciente}, '${c.paciente}')"><i class="ph ph-stethoscope"></i> Atender</button>`;
       }
 
       return `
